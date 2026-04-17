@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#C41E3A">
+<title>Regents Playbook · US 11R</title>
+<style>
+  :root {
+    --regents-red: #C41E3A;
+    --regents-red-dark: #8B1329;
+    --tier1-red: #C41E3A;
+    --tier2-orange: #C07A1C;
+    --thread-green: #1B4332;
+    --cream: #F5F2E8;
+    --charcoal: #1A1A1A;
+    --muted: #6B6B6B;
+    --gold: #B8860B;
+    --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--charcoal);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    overflow: hidden;
+    overscroll-behavior: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* APP SHELL */
+  .app {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--charcoal);
+  }
+
+  /* HEADER TABS */
+  .tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    background: var(--charcoal);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: env(safe-area-inset-top) 0 0 0;
+    flex-shrink: 0;
+  }
+  .tab {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    padding: 12px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    font-family: inherit;
+    text-transform: uppercase;
+  }
+  .tab.active {
+    color: #fff;
+    border-bottom-color: var(--regents-red);
+  }
+  .tab-label {
+    display: block;
+    font-size: 9px;
+    font-weight: 500;
+    margin-top: 2px;
+    opacity: 0.6;
+    letter-spacing: 0.5px;
+  }
+
+  /* DECK CONTAINER */
+  .deck-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .deck {
+    position: absolute;
+    inset: 0;
+    display: none;
+  }
+  .deck.active { display: block; }
+
+  .cards {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+    will-change: transform;
+  }
+
+  .card {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    padding: 16px 14px 64px 14px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* CARD STYLES */
+  .card-inner {
+    flex: 1;
+    background: var(--cream);
+    border-radius: 18px;
+    box-shadow: var(--card-shadow);
+    padding: 18px 20px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 22px;
+    margin-bottom: 4px;
+  }
+
+  .tier-flag {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .tier-flag.tier-1 {
+    background: var(--tier1-red);
+    color: #fff;
+  }
+  .tier-flag.tier-2 {
+    background: var(--tier2-orange);
+    color: #fff;
+  }
+
+  .card-number {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-left: auto;
+  }
+
+  .card-icon {
+    font-size: 44px;
+    text-align: center;
+    margin: 4px 0 10px 0;
+    line-height: 1;
+  }
+
+  .card-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--charcoal);
+    line-height: 1.15;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+    text-align: center;
+  }
+
+  .card-op {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.42;
+    color: var(--charcoal);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    text-align: center;
+  }
+
+  .card-meta {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 2px solid rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .exam-term {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--regents-red);
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+  }
+
+  .thread-tag {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--thread-green);
+    background: rgba(27, 67, 50, 0.1);
+    padding: 3px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  .pointer-footer {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(0,0,0,0.12);
+  }
+  .pointer-line {
+    font-size: 11px;
+    font-style: italic;
+    color: var(--muted);
+    line-height: 1.35;
+    margin-bottom: 3px;
+  }
+  .pointer-line:last-child { margin-bottom: 0; }
+
+  /* INTRO CARDS (test-day cards) */
+  .card.intro .card-inner {
+    background: var(--regents-red);
+    color: #fff;
+  }
+  .card.intro .card-title,
+  .card.intro .card-op {
+    color: #fff;
+  }
+  .card.intro .card-number {
+    color: rgba(255,255,255,0.7);
+  }
+  .card.intro .exam-term {
+    color: #fff;
+  }
+  .card.intro .card-meta {
+    border-top-color: rgba(255,255,255,0.25);
+  }
+
+  /* FUNNEL CARD */
+  .card.funnel .card-inner {
+    background: var(--thread-green);
+    color: #fff;
+  }
+  .card.funnel .card-title,
+  .card.funnel .card-op {
+    color: #fff;
+  }
+  .card.funnel .card-number {
+    color: rgba(255,255,255,0.7);
+  }
+  .card.funnel .exam-term {
+    color: #fff;
+  }
+  .card.funnel .card-meta {
+    border-top-color: rgba(255,255,255,0.25);
+  }
+
+  /* PROGRESS DOTS */
+  .dots {
+    position: absolute;
+    bottom: 18px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 0 20px;
+    flex-wrap: wrap;
+    max-height: 40px;
+  }
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transition: background 0.2s, width 0.2s;
+  }
+  .dot.active {
+    background: #fff;
+    width: 18px;
+    border-radius: 3px;
+  }
+
+  /* HINT TEXT */
+  .swipe-hint {
+    position: absolute;
+    bottom: 42px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 10px;
+    letter-spacing: 1px;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    font-weight: 500;
+  }
+  .swipe-hint.hidden { opacity: 0; }
+
+  /* LANDSCAPE / DESKTOP */
+  @media (min-width: 480px) {
+    .app {
+      max-width: 420px;
+      margin: 0 auto;
+      border-left: 1px solid rgba(255,255,255,0.05);
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
+  }
+
+  @media (min-height: 740px) {
+    .card-icon { font-size: 52px; margin: 8px 0 14px 0; }
+    .card-title { font-size: 25px; margin-bottom: 16px; }
+    .card-op { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <nav class="tabs">
+    <button class="tab active" data-deck="1">
+      PART 1
+      <span class="tab-label">Test Day + Content</span>
+    </button>
+    <button class="tab" data-deck="2">
+      PART 2
+      <span class="tab-label">Short Essay</span>
+    </button>
+    <button class="tab" data-deck="3">
+      PART 3
+      <span class="tab-label">CLE</span>
+    </button>
+  </nav>
+
+  <div class="deck-container" id="deckContainer">
+    <div class="deck active" data-deck-id="1">
+      <div class="cards" id="cards-1"></div>
+      <div class="dots" id="dots-1"></div>
+    </div>
+    <div class="deck" data-deck-id="2">
+      <div class="cards" id="cards-2"></div>
+      <div class="dots" id="dots-2"></div>
+    </div>
+    <div class="deck" data-deck-id="3">
+      <div class="cards" id="cards-3"></div>
+      <div class="dots" id="dots-3"></div>
+    </div>
+    <div class="swipe-hint" id="swipeHint">← SWIPE →</div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================================
+// DATA — Embedded from playbook_data.json
+// ============================================================================
+
+const PLAYBOOK = {
+  "meta": {
+    "title": "US11R Regents Playbook",
+    "subtitle": "For the kid who opens one thing",
+    "version": "2.0 - polished"
+  },
+  "decks": {
+    "1": {
+      "title": "Part 1 Playbook",
+      "subtitle": "Test-Day + Content",
+      "slides": [
+        {
+          "type": "intro",
+          "icon": "📋",
+          "title": "The Test",
+          "op": "You have 3 hours. Part 1 = 28 multiple choice. Part 2 = 2 stimulus short essays. Part 3 = 1 Civic Literacy Essay.",
+          "term": "Regents Framework"
+        },
+        {
+          "type": "intro",
+          "icon": "⏱️",
+          "title": "The Math of 3 Hours",
+          "op": "Part 1: ~30 min. Part 2: ~40 min. Part 3: 45 min. That leaves ~65 min of buffer. Don't burn it on Part 1.",
+          "term": "Time Allocation"
+        },
+        {
+          "type": "intro",
+          "icon": "🖊️",
+          "title": "Bring This",
+          "op": "Blue or black ink only. Two pens. Pencil for scantron. ID. No phone. No smartwatch. Water bottle OK.",
+          "term": "Testing Materials"
+        },
+        {
+          "type": "content",
+          "icon": "🏛️",
+          "title": "Colonial Foundations",
+          "op": "When you see a question about colonial government, think representative democracy + Mayflower Compact + House of Burgesses.",
+          "term": "Self-Government",
+          "thread": "T3 · Role of Government",
+          "tier": 3,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-1"
+        },
+        {
+          "type": "content",
+          "icon": "📜",
+          "title": "The Constitution",
+          "op": "When you see a question about the Constitution, look for the principle tested: federalism, separation of powers, checks and balances, or individual rights.",
+          "term": "Federalism",
+          "thread": "T3 · Role of Government",
+          "tier": 2,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-1"
+        },
+        {
+          "type": "content",
+          "icon": "🗣️",
+          "title": "First Amendment",
+          "op": "When you see freedom of speech, religion, press, or assembly — the answer involves the First Amendment.",
+          "term": "First Amendment",
+          "thread": "T7 · Civil Liberties",
+          "tier": 2,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-2"
+        },
+        {
+          "type": "content",
+          "icon": "✊",
+          "title": "Antebellum Reform",
+          "op": "1800s reform pattern: identify injustice → organize → petition → legislate. Abolition, women's rights, temperance, education.",
+          "term": "Reform Movements",
+          "thread": "T5 · Reform in America",
+          "tier": 2,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-2"
+        },
+        {
+          "type": "content",
+          "icon": "⛓️",
+          "title": "Reconstruction Amendments",
+          "op": "13th ended slavery. 14th made citizens equal. 15th gave Black men the vote. The three most-tested amendments on the exam.",
+          "term": "Equal Protection",
+          "thread": "T1 · One America?",
+          "tier": 1,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-3"
+        },
+        {
+          "type": "content",
+          "icon": "🏭",
+          "title": "Industrial Labor",
+          "op": "Late 1800s factories: bad conditions → unions form → strikes → eventual reform in the Progressive Era.",
+          "term": "Industrialization",
+          "thread": "T5 · Reform in America",
+          "tier": 2,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-4"
+        },
+        {
+          "type": "content",
+          "icon": "🚢",
+          "title": "Immigration + Nativism",
+          "op": "Every immigration wave produced a nativist backlash. 1882 Chinese Exclusion. 1924 National Origins Act. Same pattern, different groups.",
+          "term": "Nativism",
+          "thread": "T6 · Immigration & Identity",
+          "tier": 2,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-4"
+        },
+        {
+          "type": "content",
+          "icon": "🏛️",
+          "title": "Progressive Era",
+          "op": "Progressive answer: government must regulate business + protect workers + give voters more power. 16th, 17th, 18th, 19th amendments.",
+          "term": "Progressivism",
+          "thread": "T5 · Reform in America",
+          "tier": 1,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-5"
+        },
+        {
+          "type": "content",
+          "icon": "🌎",
+          "title": "Imperialism",
+          "op": "Late 1890s imperialism: economic interests + naval strategy + yellow journalism pushed US into Cuba, Philippines, Puerto Rico, Hawaii.",
+          "term": "Imperialism",
+          "thread": "T2 · America in the World",
+          "tier": 2,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-6"
+        },
+        {
+          "type": "content",
+          "icon": "🎖️",
+          "title": "WWI + Schenck",
+          "op": "Schenck v. United States (1919): free speech can be limited during wartime when speech creates a 'clear and present danger.'",
+          "term": "Clear and Present Danger",
+          "thread": "T7 · Civil Liberties",
+          "tier": 1,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-6",
+          "pointer2": "See the pattern → Thematic Threads · Thread 7"
+        },
+        {
+          "type": "content",
+          "icon": "🎷",
+          "title": "The 1920s",
+          "op": "1920s paradox: cultural explosion (Harlem Renaissance, women voting, consumerism) alongside political restriction (1924 quotas, Red Scare).",
+          "term": "Cultural Conflict",
+          "thread": "T6 · Immigration & Identity",
+          "tier": 2,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-7"
+        },
+        {
+          "type": "content",
+          "icon": "📰",
+          "title": "Depression + New Deal",
+          "op": "New Deal = FDR expanded federal government to fight the Depression. Relief, Recovery, Reform. The single most-tested topic on the exam.",
+          "term": "New Deal",
+          "thread": "T3 · Role of Government",
+          "tier": 1,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-7"
+        },
+        {
+          "type": "content",
+          "icon": "⚖️",
+          "title": "Court-Packing",
+          "op": "When you see a 1937 cartoon about FDR and judges, the answer is court-packing. Congress said no. Checks and balances held.",
+          "term": "Checks and Balances",
+          "thread": "T4 · Presidential Power",
+          "tier": 2,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-7"
+        },
+        {
+          "type": "content",
+          "icon": "🏳️",
+          "title": "WWII + Korematsu",
+          "op": "Korematsu v. United States (1944): Supreme Court upheld Japanese internment in wartime. Later seen as a civil liberties failure.",
+          "term": "Wartime Civil Liberties",
+          "thread": "T7 · Civil Liberties",
+          "tier": 1,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-8",
+          "pointer2": "See the pattern → Thematic Threads · Thread 7"
+        },
+        {
+          "type": "content",
+          "icon": "🌐",
+          "title": "Cold War + Containment",
+          "op": "Cold War answer: containment = stop communism from spreading. Truman Doctrine, Marshall Plan, Korea, Vietnam. Same playbook.",
+          "term": "Containment",
+          "thread": "T2 · America in the World",
+          "tier": 1,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-9"
+        },
+        {
+          "type": "content",
+          "icon": "✊🏿",
+          "title": "Civil Rights Movement",
+          "op": "Brown v. Board (1954) → Montgomery (1955) → Civil Rights Act (1964) → Voting Rights Act (1965). Learn this sequence.",
+          "term": "Equal Protection (14th)",
+          "thread": "T1 · One America?",
+          "tier": 1,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-9",
+          "pointer2": "See the pattern → Thematic Threads · Thread 1"
+        },
+        {
+          "type": "content",
+          "icon": "🕊️",
+          "title": "Vietnam + War Powers",
+          "op": "Vietnam: Gulf of Tonkin (1964) escalation → Tet (1968) turning point → War Powers Act (1973) limited presidents afterwards.",
+          "term": "War Powers Act",
+          "thread": "T4 · Presidential Power",
+          "tier": 2,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-9",
+          "pointer2": "See the pattern → Thematic Threads · Thread 4"
+        },
+        {
+          "type": "content",
+          "icon": "🚪",
+          "title": "Watergate",
+          "op": "US v. Nixon (1974): no president is above the law. Executive privilege has limits. Nixon resigned. Checks and balances worked.",
+          "term": "Executive Privilege",
+          "thread": "T4 · Presidential Power",
+          "tier": 2,
+          "pointer": "Want more? → Classroom · Regents Review · Content Review · GC_Brief_Unit11-10"
+        },
+        {
+          "type": "funnel",
+          "icon": "📚",
+          "title": "If This Helped",
+          "op": "Review book has unit-by-unit breakdowns. Threads app shows the seven big patterns. Google Classroom has practice Regents exams.",
+          "term": "Next Steps"
+        }
+      ]
+    },
+    "2": {
+      "title": "Part 2 Playbook",
+      "subtitle": "Short Essay · Stimulus Sets",
+      "slides": [
+        {
+          "type": "intro",
+          "icon": "📋",
+          "title": "What Part 2 Is",
+          "op": "Part 2 = two stimulus sets. Each has 3 documents + scaffolded questions. 20 minutes per set. Answer the questions. Don't write a formal essay.",
+          "term": "Stimulus Set"
+        },
+        {
+          "type": "content",
+          "icon": "🔄",
+          "title": "Read Questions First",
+          "op": "Before you read the documents, read the questions. Now you know what to look for. Saves 5 minutes per set.",
+          "term": "Strategic Reading",
+          "pointer": "Practice this → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "📍",
+          "title": "Historical Context First",
+          "op": "Every stimulus set asks about a specific historical moment. State when and what was happening in one sentence before anything else.",
+          "term": "Historical Context",
+          "pointer": "Context help → Classroom · Regents Review · Content Review (any unit brief)"
+        },
+        {
+          "type": "content",
+          "icon": "🔍",
+          "title": "Source the Document",
+          "op": "Who made it? When? For whom? Why? Every document has these four answers at the top. Use them.",
+          "term": "Sourcing",
+          "pointer": "Practice this → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "💬",
+          "title": "Evidence Must Be Specific",
+          "op": "Generic answers score 1. Specific answers score 2. Name a person. Quote a phrase. Cite a date.",
+          "term": "Specific Evidence",
+          "pointer": "Practice this → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "➡️",
+          "title": "Cause + Effect Pattern",
+          "op": "Most Part 2 questions are cause-and-effect. State the cause. Name the effect. Link them with 'which led to' or 'as a result of.'",
+          "term": "Causation",
+          "pointer": "Practice this → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "⚖️",
+          "title": "Compare + Contrast",
+          "op": "If the question says compare, give a similarity AND a difference. One of each. Not both similarities.",
+          "term": "Comparison",
+          "pointer": "Practice this → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "🛤️",
+          "title": "Turning Point Pattern",
+          "op": "If the question asks about a turning point, say what was true BEFORE and what was true AFTER. The difference IS the turning point.",
+          "term": "Turning Point",
+          "pointer": "Practice this → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "🧠",
+          "title": "Document + Outside Info",
+          "op": "Highest scores use the document AND something from your own knowledge. Say 'Document 1 shows X, which connects to Y from class.'",
+          "term": "Outside Evidence",
+          "pointer": "Outside info lives → Classroom · Regents Review · Content Review"
+        },
+        {
+          "type": "content",
+          "icon": "❌",
+          "title": "Don't Leave Blanks",
+          "op": "Blank = 0. Attempted = 1. Blank answers can't be graded up. Write SOMETHING, even if unsure.",
+          "term": "Completion"
+        },
+        {
+          "type": "content",
+          "icon": "⏰",
+          "title": "Time Check at 15 Min",
+          "op": "At 15 minutes per set, check where you are. If you haven't answered the last question, move to it NOW.",
+          "term": "Pacing"
+        },
+        {
+          "type": "funnel",
+          "icon": "📝",
+          "title": "If This Helped",
+          "op": "Practice short essay sets and model responses are on Google Classroom. Model responses show what full-credit answers look like.",
+          "term": "Next Steps"
+        }
+      ]
+    },
+    "3": {
+      "title": "Part 3 Playbook",
+      "subtitle": "Civic Literacy Essay",
+      "slides": [
+        {
+          "type": "intro",
+          "icon": "✍️",
+          "title": "What the CLE Is",
+          "op": "Civic Literacy Essay = one essay, 45 minutes, 3–5 documents. Pick a civic issue, trace it through history, argue a position.",
+          "term": "Civic Literacy Essay"
+        },
+        {
+          "type": "content",
+          "icon": "🎯",
+          "title": "The Rubric Points",
+          "op": "Five points possible: Thesis (1) + Historical Context (1) + Document Use (2) + Outside Evidence (1). Skip one, lose that point.",
+          "term": "CLE Rubric",
+          "pointer": "Full rubric → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "⚠️",
+          "title": "Context = Most-Missed Point",
+          "op": "Most students skip historical context. Don't. Write one paragraph: 'During [era], [big thing] was happening, which meant [connection].'",
+          "term": "Historical Context",
+          "pointer": "Context help → Classroom · Regents Review · Content Review (any unit brief)"
+        },
+        {
+          "type": "content",
+          "icon": "💡",
+          "title": "The Thesis Formula",
+          "op": "Take a position. Use: 'Although [counterargument], [your claim] because [reason].' State it in your first paragraph.",
+          "term": "Thesis",
+          "pointer": "Model theses → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "🏷️",
+          "title": "Name Your Documents",
+          "op": "Use at least 2 documents. 'Document 1, written by [author], states X.' Then SAY WHAT IT MEANS. Don't just quote.",
+          "term": "Document Use",
+          "pointer": "Model answers → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "💭",
+          "title": "The So-What Move",
+          "op": "After every document you cite, add a sentence explaining WHY it matters for your argument. This separates a 2 from a 3.",
+          "term": "Analysis",
+          "pointer": "Model answers → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "🧠",
+          "title": "Outside Evidence",
+          "op": "Bring in ONE thing from your own knowledge — not in any document. A court case, a law, an event. One well-chosen piece earns the point.",
+          "term": "Outside Evidence",
+          "pointer": "Outside info lives → Classroom · Regents Review · Content Review"
+        },
+        {
+          "type": "content",
+          "icon": "📜",
+          "title": "Name the Civic Principle",
+          "op": "Every CLE connects to a civic principle: federalism, checks and balances, individual rights, rule of law, equal protection. NAME it.",
+          "term": "Civic Principle",
+          "pointer": "See the patterns → Classroom · Regents Review · Thematic Threads"
+        },
+        {
+          "type": "content",
+          "icon": "🧱",
+          "title": "The PEEL Structure",
+          "op": "Each paragraph: Point (claim). Evidence (document or outside). Explanation (so what). Link (to thesis or next paragraph).",
+          "term": "PEEL",
+          "pointer": "Model answers → Classroom · Regents Review · One Document to Rule Them All"
+        },
+        {
+          "type": "content",
+          "icon": "⏱️",
+          "title": "The 45-Minute Breakdown",
+          "op": "5 min plan (thesis + outline). 30 min write (intro + 3 body + conclusion). 10 min review + add anything missing.",
+          "term": "CLE Pacing"
+        },
+        {
+          "type": "content",
+          "icon": "🔄",
+          "title": "Conclusion = Restate + Extend",
+          "op": "Restate your thesis in different words. Then add ONE sentence connecting the issue to today. Don't just summarize.",
+          "term": "Conclusion"
+        },
+        {
+          "type": "content",
+          "icon": "🚫",
+          "title": "Don't Leave the CLE Blank",
+          "op": "A blank CLE is an automatic major score drop. Even 2-3 weak paragraphs earn more than nothing. Write SOMETHING for every rubric point.",
+          "term": "CLE Completion"
+        },
+        {
+          "type": "content",
+          "icon": "⭐",
+          "title": "The Three Moves That Win",
+          "op": "Remember three things: write historical context, state a clear thesis, add 'so what' after every document. These three earn most of the points.",
+          "term": "CLE Essentials"
+        },
+        {
+          "type": "funnel",
+          "icon": "📘",
+          "title": "If This Helped",
+          "op": "Review book has anchor CLE paragraphs showing full-credit essays. Google Classroom has practice CLE prompts.",
+          "term": "Next Steps"
+        }
+      ]
+    }
+  }
+}
+;
+
+const DECKS = {};
+for (const [id, deck] of Object.entries(PLAYBOOK.decks)) {
+  DECKS[id] = deck.slides;
+}
+
+// ============================================================================
+// RENDER
+// ============================================================================
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderCard(c, i, total) {
+  const tierBadge = c.tier === 1
+    ? '<span class="tier-flag tier-1">Tier 1 · Every Exam</span>'
+    : c.tier === 2
+    ? '<span class="tier-flag tier-2">Tier 2 · Most Exams</span>'
+    : '';
+
+  const threadTag = c.thread ? `<span class="thread-tag">${escapeHtml(c.thread)}</span>` : '';
+
+  const pointers = [];
+  if (c.pointer) pointers.push(`<div class="pointer-line">${escapeHtml(c.pointer)}</div>`);
+  if (c.pointer2) pointers.push(`<div class="pointer-line">${escapeHtml(c.pointer2)}</div>`);
+  const pointerBlock = pointers.length
+    ? `<div class="pointer-footer">${pointers.join('')}</div>`
+    : '';
+
+  return `
+    <div class="card ${c.type}">
+      <div class="card-inner">
+        <div class="card-header">
+          ${tierBadge}
+          <span class="card-number">${String(i + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}</span>
+        </div>
+        <div class="card-icon">${c.icon}</div>
+        <div class="card-title">${escapeHtml(c.title)}</div>
+        <div class="card-op">${escapeHtml(c.op)}</div>
+        <div class="card-meta">
+          <span class="exam-term">${escapeHtml(c.term)}</span>
+          ${threadTag}
+        </div>
+        ${pointerBlock}
+      </div>
+    </div>
+  `;
+}
+
+function renderDeck(deckId) {
+  const cards = DECKS[deckId];
+  const cardsEl = document.getElementById(`cards-${deckId}`);
+  const dotsEl = document.getElementById(`dots-${deckId}`);
+
+  cardsEl.innerHTML = cards.map((c, i) => renderCard(c, i, cards.length)).join('');
+  dotsEl.innerHTML = cards.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('');
+}
+
+renderDeck("1");
+renderDeck("2");
+renderDeck("3");
+
+// ============================================================================
+// NAVIGATION
+// ============================================================================
+
+const state = {
+  currentDeck: "1",
+  positions: { "1": 0, "2": 0, "3": 0 }
+};
+
+function updateCarousel(deckId) {
+  const cardsEl = document.getElementById(`cards-${deckId}`);
+  const dotsEl = document.getElementById(`dots-${deckId}`);
+  const pos = state.positions[deckId];
+  cardsEl.style.transform = `translateX(-${pos * 100}%)`;
+  Array.from(dotsEl.children).forEach((dot, i) => {
+    dot.classList.toggle('active', i === pos);
+  });
+  if (pos > 0) {
+    document.getElementById('swipeHint').classList.add('hidden');
+  }
+}
+
+function switchDeck(deckId) {
+  state.currentDeck = deckId;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.deck === deckId));
+  document.querySelectorAll('.deck').forEach(d => d.classList.toggle('active', d.dataset.deckId === deckId));
+  if (state.positions[deckId] === 0) {
+    document.getElementById('swipeHint').classList.remove('hidden');
+  }
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => switchDeck(tab.dataset.deck));
+});
+
+let touchStartX = null, touchStartY = null;
+const SWIPE_THRESHOLD = 50;
+const MAX_VERTICAL_SLOP = 80;
+
+document.getElementById('deckContainer').addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.getElementById('deckContainer').addEventListener('touchend', (e) => {
+  if (touchStartX === null) return;
+  const endX = e.changedTouches[0].clientX;
+  const endY = e.changedTouches[0].clientY;
+  const dx = endX - touchStartX;
+  const dy = endY - touchStartY;
+  if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < MAX_VERTICAL_SLOP) {
+    const deck = state.currentDeck;
+    const maxPos = DECKS[deck].length - 1;
+    if (dx < 0 && state.positions[deck] < maxPos) {
+      state.positions[deck]++;
+      updateCarousel(deck);
+    } else if (dx > 0 && state.positions[deck] > 0) {
+      state.positions[deck]--;
+      updateCarousel(deck);
+    }
+  }
+  touchStartX = null;
+}, { passive: true });
+
+document.addEventListener('keydown', (e) => {
+  const deck = state.currentDeck;
+  const maxPos = DECKS[deck].length - 1;
+  if (e.key === 'ArrowRight' && state.positions[deck] < maxPos) {
+    state.positions[deck]++;
+    updateCarousel(deck);
+  } else if (e.key === 'ArrowLeft' && state.positions[deck] > 0) {
+    state.positions[deck]--;
+    updateCarousel(deck);
+  } else if (e.key === '1' || e.key === '2' || e.key === '3') {
+    switchDeck(e.key);
+  }
+});
+
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+document.addEventListener('dblclick', (e) => e.preventDefault());
+</script>
+
+</body>
+</html>
